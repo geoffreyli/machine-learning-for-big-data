@@ -2,16 +2,17 @@
 
 import numpy as np
 import random
-import time
+import timeit
 import pdb
 import unittest
-from PIL import Image
+from pillow import Image
+import matplotlib.pyplot as plt
 
 # Finds the L1 distance between two vectors
 # u and v are 1-dimensional np.array objects
 # TODO: Implement this
 def l1(u, v):
-    raise NotImplementedError
+    return np.sum(np.abs(u - v))
 
 # Loads the data into a np array, where each row corresponds to
 # an image patch -- this step is sort of slow.
@@ -94,13 +95,135 @@ def plot(A, row_nums, base_filename):
 
 # Finds the nearest neighbors to a given vector, using linear search.
 def linear_search(A, query_index, num_neighbors):
-    raise NotImplementedError #TODO
+    A_wo_query = filter(lambda i: i != query_index, range(len(A)))
+
+    distances = map(lambda r: (r, l1(A[r], A[query_index])), A_wo_query)
+    best_neighbors = sorted(distances, key=lambda t: t[1])[:num_neighbors]
+
+    return [t[0] for t in best_neighbors]
+
 
 # TODO: Write a function that computes the error measure
+def compute_error(A, query_indices, nn_linear, nn_lsh):
+    error = list()
+
+    for query_index in query_indices:
+        lsh_distances = map(lambda r: l1(A[r], A[query_index]), nn_lsh[query_index])
+        linear_distances = map(lambda r: l1(A[r], A[query_index]), nn_linear[query_index])
+        error.append(sum(lsh_distances)/sum(linear_distances))
+
+    return sum(error)/len(error)
+
 
 # TODO: Solve Problem 4
 def problem4():
-    raise NotImplementedError
+    patches = load_data('./q4/data/patches.csv')
+
+    # Part (d.1)
+
+    queryPatches = [100*i for i in range(1,11)]
+
+    hashFuncs, hashedPatches = lsh_setup(patches)
+    timeLinear = list()
+    timeLSH = list()
+    nn3Linear = dict()
+    nn3LSH = dict()
+
+    for queryIndex in queryPatches:
+
+        start_time = timeit.default_timer()
+        top3 = linear_search(patches, queryIndex, 3)
+        end_time = timeit.default_timer()
+        nn3Linear[queryIndex] = top3
+        timeLinear.append((end_time - start_time))
+
+        start_time = timeit.default_timer()
+        top3 = lsh_search(patches, hashedPatches, hashFuncs, queryIndex, 3)
+        end_time = timeit.default_timer()
+        nn3LSH[queryIndex] = top3
+        timeLSH.append((end_time - start_time))
+
+
+    timeLinear_mean = np.mean(timeLinear)
+    timeLSH_mean = np.mean(timeLSH)
+
+    print('Linear Search')
+    print(nn3Linear)
+    print(timeLinear_mean)
+    print('')
+
+    print('LSH Search')
+    print(nn3LSH)
+    print(timeLSH_mean)
+    print('')
+
+    # Part (d.2)
+
+    k_set = 24
+    L_var = [10, 12, 14, 16, 18, 20]
+    L_set = 10
+    k_var = [16, 18, 20, 22, 24]
+
+    l_plot_errors = list()
+
+    for l_instance in L_var:
+        hashFuncs_l, hashedPatches_l = lsh_setup(patches, k=k_set, L=l_instance)
+        nn3Linear_l = dict()
+        nn3LSH_l = dict()
+
+        for queryIndex in queryPatches:
+            nn3Linear_l[queryIndex] = linear_search(patches, queryIndex, 3)
+            nn3LSH_l[queryIndex] = lsh_search(patches, hashedPatches_l, hashFuncs_l, queryIndex, 3)
+
+        l_plot_errors.append(compute_error(patches, queryPatches, nn3Linear_l, nn3LSH_l))
+
+    plt.figure(0)
+    plt.plot(L_var, l_plot_errors)
+    plt.savefig('l_plot.png')
+    plt.close('l_plot.png')
+
+
+    k_plot_errors = list()
+
+    for k_instance in k_var:
+        hashFuncs_k, hashedPatches_k = lsh_setup(patches, k=k_instance, L=L_set)
+        nn3Linear_k = dict()
+        nn3LSH_k = dict()
+
+        for queryIndex in queryPatches:
+            nn3Linear_k[queryIndex] = linear_search(patches, queryIndex, 3)
+            nn3LSH_k[queryIndex] = lsh_search(patches, hashedPatches_k, hashFuncs_k, queryIndex, 3)
+
+        k_plot_errors.append(compute_error(patches, queryPatches, nn3Linear_k, nn3LSH_k))
+
+    plt.figure(1)
+    plt.plot(k_var, k_plot_errors)
+    plt.savefig('k_plot.png')
+    plt.close('k_plot.png')
+
+    print("Part d.2 complete")
+    print("")
+
+    # Part (d.3)
+
+    queryIndex_q4d3 = 100
+    topN_q4d3 = 10
+    hashFuncs, hashedPatches = lsh_setup(patches)
+
+    nn10Linear = linear_search(patches, queryIndex_q4d3, topN_q4d3)
+    plot(patches, nn10Linear, 'nn10Linear')
+    print("nn10Linear")
+    print(nn10Linear)
+    print("")
+
+    nn10LSH = lsh_search(patches, hashedPatches, hashFuncs, queryIndex_q4d3, topN_q4d3)
+    plot(patches, nn10LSH, 'nn10LSH')
+    print("nn10LSH")
+    print(nn10LSH)
+    print("")
+
+
+
 
 #### TESTS #####
 
