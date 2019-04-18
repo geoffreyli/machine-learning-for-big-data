@@ -118,10 +118,11 @@ def compute_error(A, query_indices, nn_linear, nn_lsh):
 # TODO: Solve Problem 4
 def problem4():
     patches = load_data('./q4/data/patches.csv')
+    queryPatches = [100*i-1 for i in range(1, 11)]
 
     # Part (d.1)
 
-    queryPatches = [100*i-1 for i in range(1,11)]
+    topN_q4d1 = 3
 
     hashFuncs, hashedPatches = lsh_setup(patches)
     timeLinear = list()
@@ -132,13 +133,13 @@ def problem4():
     for queryIndex in queryPatches:
 
         start_time = timeit.default_timer()
-        top3 = linear_search(patches, queryIndex, 3)
+        top3 = linear_search(patches, queryIndex, topN_q4d1)
         end_time = timeit.default_timer()
         nn3Linear[queryIndex] = top3
         timeLinear.append((end_time - start_time))
 
         start_time = timeit.default_timer()
-        top3 = lsh_search(patches, hashedPatches, hashFuncs, queryIndex, 3)
+        top3 = lsh_search(patches, hashedPatches, hashFuncs, queryIndex, topN_q4d1)
         end_time = timeit.default_timer()
         nn3LSH[queryIndex] = top3
         timeLSH.append((end_time - start_time))
@@ -157,12 +158,16 @@ def problem4():
     print(timeLSH_mean)
     print('')
 
+    print("Part d.1 complete")
+    print("")
+
     # Part (d.2)
 
     k_set = 24
     L_var = [10, 12, 14, 16, 18, 20]
     L_set = 10
     k_var = [16, 18, 20, 22, 24]
+    topN_q4d2 = 3
 
     l_plot_errors = list()
 
@@ -172,8 +177,8 @@ def problem4():
         nn3LSH_l = dict()
 
         for queryIndex in queryPatches:
-            nn3Linear_l[queryIndex] = linear_search(patches, queryIndex, 3)
-            nn3LSH_l[queryIndex] = lsh_search(patches, hashedPatches_l, hashFuncs_l, queryIndex, 3)
+            nn3Linear_l[queryIndex] = linear_search(patches, queryIndex, topN_q4d2)
+            nn3LSH_l[queryIndex] = lsh_search(patches, hashedPatches_l, hashFuncs_l, queryIndex, topN_q4d2)
 
         l_plot_errors.append(compute_error(patches, queryPatches, nn3Linear_l, nn3LSH_l))
 
@@ -191,8 +196,8 @@ def problem4():
         nn3LSH_k = dict()
 
         for queryIndex in queryPatches:
-            nn3Linear_k[queryIndex] = linear_search(patches, queryIndex, 3)
-            nn3LSH_k[queryIndex] = lsh_search(patches, hashedPatches_k, hashFuncs_k, queryIndex, 3)
+            nn3Linear_k[queryIndex] = linear_search(patches, queryIndex, topN_q4d2)
+            nn3LSH_k[queryIndex] = lsh_search(patches, hashedPatches_k, hashFuncs_k, queryIndex, topN_q4d2)
 
         k_plot_errors.append(compute_error(patches, queryPatches, nn3Linear_k, nn3LSH_k))
 
@@ -222,7 +227,8 @@ def problem4():
     print(nn10LSH)
     print("")
 
-
+    print("Part d.3 complete")
+    print("")
 
 
 #### TESTS #####
