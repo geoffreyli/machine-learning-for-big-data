@@ -5,7 +5,7 @@ import random
 import timeit
 import pdb
 import unittest
-from pillow import Image
+from PIL import Image
 import matplotlib.pyplot as plt
 
 # Finds the L1 distance between two vectors
@@ -121,7 +121,7 @@ def problem4():
 
     # Part (d.1)
 
-    queryPatches = [100*i for i in range(1,11)]
+    queryPatches = [100*i-1 for i in range(1,11)]
 
     hashFuncs, hashedPatches = lsh_setup(patches)
     timeLinear = list()
@@ -206,18 +206,18 @@ def problem4():
 
     # Part (d.3)
 
-    queryIndex_q4d3 = 100
+    queryIndex_q4d3 = 99
     topN_q4d3 = 10
     hashFuncs, hashedPatches = lsh_setup(patches)
 
     nn10Linear = linear_search(patches, queryIndex_q4d3, topN_q4d3)
-    plot(patches, nn10Linear, 'nn10Linear')
+    plot(patches, nn10Linear + [queryIndex_q4d3], 'nn10Linear')
     print("nn10Linear")
     print(nn10Linear)
     print("")
 
     nn10LSH = lsh_search(patches, hashedPatches, hashFuncs, queryIndex_q4d3, topN_q4d3)
-    plot(patches, nn10LSH, 'nn10LSH')
+    plot(patches, nn10LSH + [queryIndex_q4d3], 'nn10LSH')
     print("nn10LSH")
     print(nn10LSH)
     print("")
