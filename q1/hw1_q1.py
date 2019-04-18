@@ -1,10 +1,8 @@
-import re
 import sys
 import os
 from pyspark import SparkConf, SparkContext
 
 # Set custom amount of memory/cores to use
-
 cores = '\'local[*]\''
 memory = '10g'
 pyspark_submit_args = ' --master ' + cores + ' --driver-memory ' + memory + ' pyspark-shell'
@@ -17,10 +15,10 @@ lines = sc\
     .textFile('/Users/geoffreyli/geoffli @ UW/19-2-Sp-CSE-547/Homeworks/hw1/q1/data/soc-LiveJournal1Adj.txt', 4)\
     .map(lambda x: x.split('\t'))
 
+
 # Create RDD with (Users, [list of friends])
 # Convert userID to integers, since we'll need to sort numerically later
 # Return friends as a list of friend IDs
-
 def cleanLines(l):
     if l[1].strip():
         return (int(l[0]), list(map(int, l[1].split(','))))
@@ -35,31 +33,33 @@ friends = lines.map(cleanLines)
 #   KEY = (Friend1, Friend2) across all combinations of pairs in that user's friend list
 #   VALUE = 1
 friendPairsByUser = friends\
-    .map(lambda x: [(x[1][i],x[1][j]) for i in range(len(x[1])) for j in range(i+1, len(x[1]))])\
+    .map(lambda x: [(x[1][i], x[1][j]) for i in range(len(x[1])) for j in range(i+1, len(x[1]))])\
     .flatMap(lambda x: x)\
     .map(lambda x: (x, 1))
 
+# Also add tuples for each (User,Friend) combination. However for these pairs, we'll use
+# max negative integer as the Value. Such that when we group by these tuple pairs, the
+# value will sum to an extremely negative number, which we can use to filter out pairs that are
+# already friends.
+userFriendPairs = friends\
+    .map(lambda x: [(x[0], x[1][i]) for i in range(len(x[1]))])\
+    .flatMap(lambda x: x)\
+    .map(lambda x: (x, -sys.maxsize))
+
+allPairs = friendPairsByUser.union(userFriendPairs)
+
 # Need to sort the tuple keys so that (Friend1,Friend2) and (Friend2,Friend1) will group together
-friendPairsByUser = friendPairsByUser.map(lambda x: ((sorted(x[0])[0], sorted(x[0])[1]), 1))
+allPairsSorted = allPairs.map(lambda x: ((sorted(x[0])[0], sorted(x[0])[1]), x[1]))
 
 # Now Reduce by grouping on the (Friend1,Friend2) tuples and summing the Values
 # The sum of the Values should produce the number of mutual friends between that Friend pair
 # since we created them from the 'perspective' of the User
-mutualFriendsbyFriendPair = friendPairsByUser.reduceByKey(lambda n1, n2: n1 + n2)
+mutualFriendsbyFriendPair = allPairsSorted.reduceByKey(lambda n1, n2: n1 + n2)
 
 # Some of the (Friend1, Friend2) pairs are already friends: we need to remove these from our list
 # since we wouldn't want to recommend an existing friend.
-friendsDict = friends.collectAsMap()
-
-def checkIfAlreadyFriends(x):
-    user1, user2 = x[0]
-    if user1 not in friendsDict[user2]:
-        return True
-    else:
-        return False
-
-mutualFriendsNonExistingFriendPairs = mutualFriendsbyFriendPair.filter(checkIfAlreadyFriends)
-
+# These would be the pairs with a negative mutual friend count.
+mutualFriendsNonExistingFriendPairs = mutualFriendsbyFriendPair.filter(lambda x: x[1] >= 0)
 
 # Now we need to find the recommended friend lists for each user.
 # Restructure the RDD such that Friend1 becomes the KEY
@@ -87,6 +87,7 @@ friendRecsByUserSorted = friendRecsByUserSorted.sortByKey()
 # Extract just the list of friend recommendations for each user (without the # of mutual friends)
 friendRecListByUser = friendRecsByUserSorted.map(lambda x: (x[0], [i[0] for i in x[1]]))
 
+
 # Create function to write output to file
 def write_recs_to_file(finalRecRDD, userList, numRecs, filename):
     finalRecDict = dict()
@@ -101,9 +102,8 @@ def write_recs_to_file(finalRecRDD, userList, numRecs, filename):
             print(str(user)+'\t'+','.join(str(x) for x in recs[:outlen]), file=outfile)
 
 
-
 # Write all output to file (uncomment below)
-# write_recs_to_file(finalRecRDD=friendRecListByUser, userList=[], numRecs=10, filename='hw1q1_output_full.txt')
+write_recs_to_file(finalRecRDD=friendRecListByUser, userList=[], numRecs=10, filename='hw1q1_output_full.txt')
 
 # Write just the requested output for HW1 Q1
 output_IDs = [924, 8941, 8942, 9019, 9020, 9021, 9022, 9990, 9992, 9993]
