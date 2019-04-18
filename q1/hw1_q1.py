@@ -60,6 +60,8 @@ friendPairsByUser = friends\
 print("friendPairsByUser")
 print(friendPairsByUser.take(5))
 
+friendPairsByUser = friendPairsByUser.map(lambda x: ((sorted(x[0])[0], sorted(x[0])[1]), 1))
+
 # Now Reduce by grouping on the (Friend1,Friend2) pairs and summing the Values
 # The sum of the Values should produce the number of mutual friends between that Friend pair
 mutualFriendsbyFriendPair = friendPairsByUser.reduceByKey(lambda n1, n2: n1 + n2)
@@ -112,8 +114,17 @@ friendRecsByUserSorted = friendRecsByUser.map(lambda x: (x[0], sorted(x[1], key=
 print("friendRecsByUserSorted")
 print(friendRecsByUserSorted.take(5))
 
-print(friendRecsByUserSorted.filter(lambda x: x[0] == 11).collect())
-print(friendRecsByUserSorted.filter(lambda x: x[0] == 49991).collect())
+friendRecsByUserSorted = friendRecsByUserSorted.sortByKey()
+
+# print(friendRecsByUserSorted.filter(lambda x: x[0] == 11).collect())
+# print(friendRecsByUserSorted.filter(lambda x: x[0] == 49991).collect())
 
 
 
+
+output_IDs = [924, 8941, 8942, 9019, 9020, 9021, 9022, 9990, 9992, 9993]
+
+
+output_recs = friendRecsByUserSorted.filter(lambda x: x[0] in output_IDs)
+
+output_recs.saveAsTextFile('./q1_output')
