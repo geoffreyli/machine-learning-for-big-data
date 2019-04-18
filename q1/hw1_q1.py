@@ -119,12 +119,31 @@ friendRecsByUserSorted = friendRecsByUserSorted.sortByKey()
 # print(friendRecsByUserSorted.filter(lambda x: x[0] == 11).collect())
 # print(friendRecsByUserSorted.filter(lambda x: x[0] == 49991).collect())
 
+# Extract just the list of friend recommendations for each user (without the # of mutual friends)
+friendRecListByUser = friendRecsByUserSorted.map(lambda x: (x[0], [i[0] for i in x[1]]))
+
+
+# Create function to write output to file
+def write_recs_to_file(finalRecRDD, userList, numRecs, filename):
+    finalRecDict = dict()
+    if userList:
+        finalRecDict = finalRecRDD.filter(lambda x: x[0] in userList).collectAsMap()
+    else:
+        finalRecDict = finalRecRDD.collectAsMap()
+
+
+    with open(filename, 'w') as outfile:
+        for user, recs in finalRecDict.items():
+            outlen = min(len(recs), numRecs)
+            print(str(user)+'\t'+','.join(str(x) for x in recs[:outlen]), file=outfile)
 
 
 
+# Write all output to file (uncomment below)
+# write_recs_to_file(finalRecRDD=friendRecListByUser, numRecs=10, filename='hw1q1_output_full.txt')
+
+# Write just the requested output for HW1 Q1
 output_IDs = [924, 8941, 8942, 9019, 9020, 9021, 9022, 9990, 9992, 9993]
+write_recs_to_file(finalRecRDD=friendRecListByUser, userList=output_IDs, numRecs=10, filename='hw1q1_output.txt')
 
 
-output_recs = friendRecsByUserSorted.filter(lambda x: x[0] in output_IDs)
-
-output_recs.saveAsTextFile('./q1_output')
