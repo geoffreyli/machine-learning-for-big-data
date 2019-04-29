@@ -71,14 +71,16 @@ def reduceCentroid(cd1, cd2):
 
 
 
-# Run iterative k-means
+# RUN ITERATIVE K-MEANS
+# Output: plots of total costs vs. iterations
 max_iter = 20
 centroid_inits = ['C1', 'C2']
 dist_metrics = ['Euclidean', 'Manhattan']
+improvement_idx = 9
 
-for ci in centroid_inits:
+for dist_metric in dist_metrics:
 
-    for dist_metric in dist_metrics:
+    for ci in centroid_inits:
 
         if ci == 'C1':
             centroid = c1
@@ -108,6 +110,10 @@ for ci in centroid_inits:
         plt.ylabel('Total Cost')
         plt.savefig('./q2/'+ci+'-'+dist_metric+'_costs.png')
         plt.close(ci+dist_metric)
+
+        print('('+dist_metric+' Distance; '+ci+
+              ' Centroid Initialization): Drop in cost after 10 iterations = '+
+              str(cost_by_iteration[improvement_idx]/cost_by_iteration[0]-1))
 
 
 sc.stop()
