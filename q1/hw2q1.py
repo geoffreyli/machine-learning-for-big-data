@@ -10,13 +10,13 @@ faces = np.loadtxt('./q1/data/faces.csv', delimiter=',')
 
 sigma = 1/len(faces)*(faces.T@faces)
 
-sigma_eigval, sigma_eigvec = np.linalg.eigh(sigma)
+# sigma_eigval, sigma_eigvec = np.linalg.eigh(sigma)
 
 # np.save('./q1/sigma_eigval', sigma_eigval)
 # np.save('./q1/sigma_eigvec', sigma_eigvec)
 #
-# sigma_eigval = np.load('./q1/sigma_eigval.npy')
-# sigma_eigvec = np.load('./q1/sigma_eigvec.npy')
+sigma_eigval = np.load('./q1/sigma_eigval.npy')
+sigma_eigvec = np.load('./q1/sigma_eigvec.npy')
 
 # Sort from largest to smallest eigenvalues
 sort_idx = sigma_eigval.argsort()[::-1]
@@ -97,11 +97,14 @@ plt.close(3)
 
 # Reconstruct original faces from top k eigenvectors
 plt.figure('./q1/recon-face-all.png')
-fig, ax = plt.subplots(5, 5, figsize=(10, 10),
+fig, ax = plt.subplots(5, 6, figsize=(10, 10),
                        subplot_kw={'xticks': [], 'yticks': []})
 for i in range(len(imgs)):
-    for j in range(len(k)):
-        ax[i, j].imshow((faces[imgs[i], :] @ sigma_eigvec[:, 0:k[j]] @ sigma_eigvec[:, 0:k[j]].T).reshape(84, 96).T,
+    for j in range(-1, len(k)):
+        if j == -1:
+            ax[i, j+1].imshow(faces[imgs[i], :].reshape(84, 96).T, cmap='Greys_r', vmin=0, vmax=1)
+        else:
+            ax[i, j+1].imshow((faces[imgs[i], :] @ sigma_eigvec[:, 0:k[j]] @ sigma_eigvec[:, 0:k[j]].T).reshape(84, 96).T,
                    cmap='Greys_r', vmin=0, vmax=1)
 plt.savefig('./q1/recon-face-all.png')
 plt.close('./q1/recon-face-all.png')
