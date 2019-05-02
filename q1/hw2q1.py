@@ -10,13 +10,13 @@ faces = np.loadtxt('./q1/data/faces.csv', delimiter=',')
 
 sigma = 1/len(faces)*(faces.T@faces)
 
-# sigma_eigval, sigma_eigvec = np.linalg.eigh(sigma)
+sigma_eigval, sigma_eigvec = np.linalg.eigh(sigma)
 
 # np.save('./q1/sigma_eigval', sigma_eigval)
 # np.save('./q1/sigma_eigvec', sigma_eigvec)
 #
-sigma_eigval = np.load('./q1/sigma_eigval.npy')
-sigma_eigvec = np.load('./q1/sigma_eigvec.npy')
+# sigma_eigval = np.load('./q1/sigma_eigval.npy')
+# sigma_eigvec = np.load('./q1/sigma_eigvec.npy')
 
 # Sort from largest to smallest eigenvalues
 sort_idx = sigma_eigval.argsort()[::-1]
