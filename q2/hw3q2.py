@@ -39,6 +39,7 @@ def perform_dot(iterable):
     return res
 
 # Performs update to each value of PageRank vector one at a time
+# In effect doing matrix multiplication of M @ r
 def update_PageRank(node_id, edge, deg, pr, b, n):
     originNodes = edge.filter(lambda x: x[0][1] == node_id).map(lambda x: x[0][0]).collect()
     deg_filtered = deg.filter(lambda x: x[0] in originNodes)
@@ -55,12 +56,13 @@ pageRank = nodeInvDegrees.map(lambda x: (x[0], 1)).collectAsMap()
 # Perform PageRank update iterations
 beta = 0.8
 num_nodes = len(nodeInvDegrees.collect())
+iter = 40
 
-for k in range(40):
+for k in range(iter):
     for i in range(1, num_nodes+1):
         pageRank[i] = update_PageRank(i, uniqueEdges, nodeInvDegrees, pageRank, beta, num_nodes)
 
-
+# Write output to file
 with open('./q2/PageRank-top5-nodes-full.txt', 'w') as fp:
     fp.write('\n'.join('%s,%s' % x for x in sorted(pageRank.items(), key=lambda x: x[1], reverse=True)[0:5]))
 

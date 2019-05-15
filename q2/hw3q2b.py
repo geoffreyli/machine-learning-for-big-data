@@ -80,3 +80,4 @@ with open('./q2/HITS-full-auth-bot5-nodes.txt', 'w') as fp:
     fp.write('\n'.join('%s,%s' % x for x in sorted(a.items(), key=lambda x: x[1], reverse=True)[-5:]))
 
 
+sc.stop()
