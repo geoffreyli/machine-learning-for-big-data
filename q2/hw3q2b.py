@@ -72,7 +72,7 @@ for k in range(iter):
     a = scale_vector(a)
 
     for i in range(1, num_nodes+1):
-        h[i] = update_auth(i, uniqueEdges, a, mu)
+        h[i] = update_hub(i, uniqueEdges, a, lamb)
     h = scale_vector(h)
 
 
@@ -94,5 +94,5 @@ with open('./q2/HITS-small-auth-bot5-nodes.txt', 'w') as fp:
 
 # Diagnostic
 
-# t_originnodes = uniqueEdges.filter(lambda x: x[0][1] == 2).map(lambda x: x[0][0]).collect()
+# t_originnodes = uniqueEdges.filter(lambda x: x[0][1] == 1).map(lambda x: x[0][0]).collect()
 # t_hub_filtered = [v for k, v in h.items() if k in t_originnodes]
