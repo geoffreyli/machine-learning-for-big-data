@@ -14,7 +14,7 @@ sc = SparkContext(conf=conf)
 
 # Create RDD for data points
 edges = sc\
-    .textFile('./q2/data/graph-small.txt', 4)\
+    .textFile('./q2/data/graph-full.txt', 4)\
     .map(lambda x: [int(y) for y in x.split()])
 
 # Remove duplicate edges and treat them as the same edge
@@ -24,20 +24,10 @@ uniqueEdges = edges\
     .map(lambda x: (x[0], 1))
 
 
-# Performs dot product between one row of M and the r vector
-# def perform_dot(iterable):
-#     res = 1
-#     for inner_iterable in iterable:
-#         for num in inner_iterable:
-#             res *= num
-#     return res
-
-
 # Scale the hubbiness or authority vectors (which are represented as values of a Dict)
 def scale_vector(vec):
-    min_val = min(vec.values())
     max_val = max(vec.values())
-    return {k:(v-min_val)/(max_val-min_val) for k, v in vec.items()}
+    return {k:v/max_val for k, v in vec.items()}
 
 
 # Performs update to each value of Hubbiness vector one at a time
@@ -77,22 +67,16 @@ for k in range(iter):
 
 
 # Write Output to File
-with open('./q2/HITS-small-hub-top5-nodes.txt', 'w') as fp:
+with open('./q2/HITS-full-hub-top5-nodes.txt', 'w') as fp:
     fp.write('\n'.join('%s,%s' % x for x in sorted(h.items(), key=lambda x: x[1], reverse=True)[0:5]))
 
-with open('./q2/HITS-small-hub-bot5-nodes.txt', 'w') as fp:
+with open('./q2/HITS-full-hub-bot5-nodes.txt', 'w') as fp:
     fp.write('\n'.join('%s,%s' % x for x in sorted(h.items(), key=lambda x: x[1], reverse=True)[-5:]))
 
-with open('./q2/HITS-small-auth-top5-nodes.txt', 'w') as fp:
+with open('./q2/HITS-full-auth-top5-nodes.txt', 'w') as fp:
     fp.write('\n'.join('%s,%s' % x for x in sorted(a.items(), key=lambda x: x[1], reverse=True)[0:5]))
 
-with open('./q2/HITS-small-auth-bot5-nodes.txt', 'w') as fp:
+with open('./q2/HITS-full-auth-bot5-nodes.txt', 'w') as fp:
     fp.write('\n'.join('%s,%s' % x for x in sorted(a.items(), key=lambda x: x[1], reverse=True)[-5:]))
 
 
-
-
-# Diagnostic
-
-# t_originnodes = uniqueEdges.filter(lambda x: x[0][1] == 1).map(lambda x: x[0][0]).collect()
-# t_hub_filtered = [v for k, v in h.items() if k in t_originnodes]
