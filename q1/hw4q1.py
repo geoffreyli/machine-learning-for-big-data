@@ -1,5 +1,7 @@
 import numpy as np
 import sys
+from timeit import default_timer
+import matplotlib.pyplot as plt
 
 features = np.loadtxt('./q1/data/features.txt', delimiter=',')
 target = np.loadtxt('./q1/data/target.txt', delimiter=',')
@@ -54,7 +56,11 @@ def batch_gd(eta, conv_crit, x, y, C):
 C = 100
 eta_bgd = 3*10**-7
 eps_bgd = 0.25
+
+start = default_timer()
 obj_bgd = batch_gd(eta_bgd, eps_bgd, features, target, C)
+end = default_timer()
+convg_time_bgd = end - start
 
 
 
@@ -92,7 +98,11 @@ shuffled_indices = np.random.permutation(range(len(features)))
 C = 100
 eta_sgd = 0.0001
 eps_sgd = 0.001
+
+start = default_timer()
 obj_sgd = stochastic_gd(eta_sgd, eps_sgd, features[shuffled_indices, :], target[shuffled_indices], C)
+end = default_timer()
+convg_time_sgd = end - start
 
 
 def minibatch_gd(eta, B, conv_crit, x, y, C):
@@ -130,5 +140,23 @@ C = 100
 eta_mbgd = 10**-5
 eps_mbgd = 0.01
 B = 20
-obj_mbgd = stochastic_gd(eta_mbgd, B, eps_mbgd, features[shuffled_indices_mbgd, :], target[shuffled_indices_mbgd], C)
 
+start = default_timer()
+obj_mbgd = stochastic_gd(eta_mbgd, B, eps_mbgd, features[shuffled_indices_mbgd, :], target[shuffled_indices_mbgd], C)
+end = default_timer()
+convg_time_mbdg = end - start
+
+
+# Plots of iterations vs. cost function
+plt.figure()
+plt.plot(range(len(obj_bgd)), obj_bgd)
+plt.plot(range(len(obj_sgd)), obj_sgd)
+plt.plot(range(len(obj_mbgd)), obj_mbgd)
+plt.legend(['Batch GD', 'Stochastic GD', 'Mini-Batch GD'], loc='upper right')
+plt.title('Cost Function vs. Iteration t')
+plt.xlabel('Iteration t')
+plt.ylabel('Cost Function Value');
+
+
+
+# TODO: add plots and also real-world time for each GD to run, interpretation
