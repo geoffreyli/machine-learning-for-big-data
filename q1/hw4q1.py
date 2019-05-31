@@ -16,7 +16,7 @@ def computecost(w, b, x, y, C):
 def computegrad_wj(w, b, x, y, C, j, start, stop):
     loss = 0
     for i in range(start, stop):
-        if np.dot(w, x[i, :]) + b >= 1:
+        if y[i]*(np.dot(w, x[i, :])+b) >= 1:
             loss += 0
         else:
             loss += -y[i]*x[i, j]
@@ -25,7 +25,7 @@ def computegrad_wj(w, b, x, y, C, j, start, stop):
 def computegrad_b(w, b, x, y, C, start, stop):
     loss = 0
     for i in range(start, stop):
-        if np.dot(w, x[i, :]) + b >= 1:
+        if y[i]*(np.dot(w, x[i, :])+b) >= 1:
             loss += 0
         else:
             loss += -y[i]
@@ -33,6 +33,7 @@ def computegrad_b(w, b, x, y, C, start, stop):
 
 
 def batch_gd(eta, conv_crit, x, y, C):
+    print('Starting Batch Gradient Descent...')
     w = np.zeros(x.shape[1])
     b = 0
     k = 0
@@ -61,10 +62,12 @@ start = default_timer()
 obj_bgd = batch_gd(eta_bgd, eps_bgd, features, target, C)
 end = default_timer()
 convg_time_bgd = end - start
+print(convg_time_bgd)
 
 
 
 def stochastic_gd(eta, conv_crit, x, y, C):
+    print('Starting Stochastic Gradient Descent...')
     w = np.zeros(x.shape[1])
     b = 0
     k = 0
@@ -103,9 +106,11 @@ start = default_timer()
 obj_sgd = stochastic_gd(eta_sgd, eps_sgd, features[shuffled_indices, :], target[shuffled_indices], C)
 end = default_timer()
 convg_time_sgd = end - start
+print(convg_time_sgd)
 
 
 def minibatch_gd(eta, B, conv_crit, x, y, C):
+    print('Starting Mini Batch Gradient Descent...')
     w = np.zeros(x.shape[1])
     b = 0
     k = 0
@@ -124,7 +129,7 @@ def minibatch_gd(eta, B, conv_crit, x, y, C):
         b = b_last - eta * computegrad_b(w_last, b_last, x, y, C, l*B, min(len(y), (l+1)*B))
 
         k += 1
-        l = (l+1 % np.ceil(len(y)/B)) + 1
+        l = np.int((l+1 % np.ceil(len(y)/B)) + 1)
         obj_list.append(computecost(w, b, x, y, C))
 
         delta_perccost_last = delta_perccost_k
@@ -142,9 +147,10 @@ eps_mbgd = 0.01
 B = 20
 
 start = default_timer()
-obj_mbgd = stochastic_gd(eta_mbgd, B, eps_mbgd, features[shuffled_indices_mbgd, :], target[shuffled_indices_mbgd], C)
+obj_mbgd = minibatch_gd(eta_mbgd, B, eps_mbgd, features[shuffled_indices_mbgd, :], target[shuffled_indices_mbgd], C)
 end = default_timer()
 convg_time_mbdg = end - start
+print(convg_time_mbdg)
 
 
 # Plots of iterations vs. cost function
@@ -155,8 +161,8 @@ plt.plot(range(len(obj_mbgd)), obj_mbgd)
 plt.legend(['Batch GD', 'Stochastic GD', 'Mini-Batch GD'], loc='upper right')
 plt.title('Cost Function vs. Iteration t')
 plt.xlabel('Iteration t')
-plt.ylabel('Cost Function Value');
+plt.ylabel('Cost Function Value')
+plt.savefig('./q1/cost-func-vs-iterations.png');
 
 
 
-# TODO: add plots and also real-world time for each GD to run, interpretation
