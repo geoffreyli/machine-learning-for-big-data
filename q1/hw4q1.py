@@ -62,7 +62,7 @@ start = default_timer()
 obj_bgd = batch_gd(eta_bgd, eps_bgd, features, target, C)
 end = default_timer()
 convg_time_bgd = end - start
-print(convg_time_bgd)
+print(convg_time_bgd) # 88.65298919199999
 
 
 
@@ -106,7 +106,7 @@ start = default_timer()
 obj_sgd = stochastic_gd(eta_sgd, eps_sgd, features[shuffled_indices, :], target[shuffled_indices], C)
 end = default_timer()
 convg_time_sgd = end - start
-print(convg_time_sgd)
+print(convg_time_sgd) # 5.928486147000001
 
 
 def minibatch_gd(eta, B, conv_crit, x, y, C):
@@ -150,7 +150,7 @@ start = default_timer()
 obj_mbgd = minibatch_gd(eta_mbgd, B, eps_mbgd, features[shuffled_indices_mbgd, :], target[shuffled_indices_mbgd], C)
 end = default_timer()
 convg_time_mbdg = end - start
-print(convg_time_mbdg)
+print(convg_time_mbdg) # 4.008227720999997
 
 
 # Plots of iterations vs. cost function
